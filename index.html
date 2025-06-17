@@ -38,6 +38,12 @@
 <body>
   <h1>Добро пожаловать в</h1>
   <h2>MLT Drinks</h2>
-<a class="btn" href="catalog.html">Перейти к ассортименту</a>
+<button class="btn" onclick="goToCatalog()">Перейти к ассортименту</button>
+
+<script>
+  function goToCatalog() {
+    window.location.href = 'https://vinncooper.github.io/MltDrinks/catalog.html'; // или укажи абсолютную ссылку, если Telegram не поддерживает относительную
+  }
+</script>
 </body>
 </html>
