@@ -1,0 +1,179 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>MLT Drinks WebApp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 0; }
+    .container { max-width: 800px; margin: 0 auto; padding: 1rem; }
+    .screen { display: none; }
+    .active { display: block; }
+    .btn { background: #0088cc; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+    .category-btn, .product-suggestion {
+      background: #f0f0f0; border: 1px solid #ccc; padding: 0.5rem;
+      margin-bottom: 0.5rem; border-radius: 4px; cursor: pointer;
+    }
+    .top-left-btn { position: absolute; top: 1rem; left: 1rem; }
+    .controls { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    select, input[type="text"] {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    #suggestions { margin-top: 1rem; }
+    @media (max-width: 600px) {
+      .controls { flex-direction: column; align-items: stretch; }
+      select, input[type="text"], .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="unauthorized" class="screen">
+      <h2 style="color: red; text-align: center;">❌ Доступ запрещён</h2>
+      <p style="text-align: center;">Эта панель доступна только администратору.</p>
+    </div>
+
+    <div id="admin" class="screen">
+      <h1>Админ-панель MLT Drinks</h1>
+      <form id="add-form">
+        <input type="text" id="name" placeholder="Название" required />
+        <input type="number" id="price" placeholder="Цена" required />
+        <select id="category"></select>
+        <select id="stock">
+          <option value="true">В наличии</option>
+          <option value="false">Нет в наличии</option>
+        </select>
+        <button type="submit">Добавить</button>
+      </form>
+
+      <h2>Категории</h2>
+      <form id="category-form">
+        <input type="text" id="new-category" placeholder="Новая категория" />
+        <button type="submit">Добавить категорию</button>
+      </form>
+      <ul id="category-list"></ul>
+
+      <h2>Список товаров</h2>
+      <table>
+        <thead>
+          <tr><th>Название</th><th>Цена</th><th>Категория</th><th>Наличие</th><th>Действия</th></tr>
+        </thead>
+        <tbody id="product-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+  const adminId = 2010575827;
+  const user = window.Telegram.WebApp.initDataUnsafe?.user;
+  const isAdmin = user && user.id === adminId;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!isAdmin) {
+      show("unauthorized");
+      return;
+    }
+    show("admin");
+    initAdmin();
+  });
+
+  function show(id) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  }
+
+  let products = JSON.parse(localStorage.getItem("products") || "[]");
+  let categories = [...new Set(products.map(p => p.category))];
+
+  function initAdmin() {
+    renderCategories();
+    renderProducts();
+
+    document.getElementById("add-form").onsubmit = (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const price = +document.getElementById("price").value;
+      const category = document.getElementById("category").value;
+      const in_stock = document.getElementById("stock").value === "true";
+      products.push({ name, price, category, in_stock });
+      localStorage.setItem("products", JSON.stringify(products));
+      e.target.reset();
+      renderProducts();
+    };
+
+    document.getElementById("category-form").onsubmit = (e) => {
+      e.preventDefault();
+      const newCat = document.getElementById("new-category").value.trim();
+      if (newCat && !categories.includes(newCat)) {
+        categories.push(newCat);
+        renderCategories();
+      }
+      e.target.reset();
+    };
+  }
+
+  function renderCategories() {
+    const catSelect = document.getElementById("category");
+    const catList = document.getElementById("category-list");
+    catSelect.innerHTML = "";
+    catList.innerHTML = "";
+    categories.forEach(cat => {
+      const option = document.createElement("option");
+      option.value = cat;
+      option.innerText = cat;
+      catSelect.appendChild(option);
+
+      const li = document.createElement("li");
+      li.textContent = cat;
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "Удалить";
+      delBtn.onclick = () => {
+        categories = categories.filter(c => c !== cat);
+        products = products.filter(p => p.category !== cat);
+        localStorage.setItem("products", JSON.stringify(products));
+        renderCategories();
+        renderProducts();
+      };
+      li.appendChild(delBtn);
+      catList.appendChild(li);
+    });
+  }
+
+  function renderProducts() {
+    const table = document.getElementById("product-table");
+    table.innerHTML = "";
+    products.forEach((p, i) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><input value="${p.name}" onchange="products[${i}].name=this.value" /></td>
+        <td><input type="number" value="${p.price}" onchange="products[${i}].price=this.value" /></td>
+        <td>
+          <select onchange="products[${i}].category=this.value">
+            ${categories.map(c => `<option value="${c}" ${p.category === c ? 'selected' : ''}>${c}</option>`).join("")}
+          </select>
+        </td>
+        <td>
+          <select onchange="products[${i}].in_stock=this.value==='true'">
+            <option value="true" ${p.in_stock ? "selected" : ""}>В наличии</option>
+            <option value="false" ${!p.in_stock ? "selected" : ""}>Нет</option>
+          </select>
+        </td>
+        <td><button onclick="deleteProduct(${i})">Удалить</button></td>
+      `;
+      table.appendChild(row);
+    });
+    localStorage.setItem("products", JSON.stringify(products));
+  }
+
+  function deleteProduct(i) {
+    products.splice(i, 1);
+    renderProducts();
+  }
+</script>
+</body>
+</html>
