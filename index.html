@@ -4,51 +4,59 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MLT Drinks</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background-color: #ffffff;
-      margin: 0;
-      padding: 2em;
+      margin-top: 100px;
+      background-color: #f7f7f7;
     }
     h1 {
-      font-size: 2.5em;
-      margin-bottom: 0.2em;
+      font-size: 24px;
     }
-    h2 {
-      font-size: 1.8em;
-      margin-bottom: 2em;
-    }
-    .btn {
-      background-color: #0078d7;
+    .button {
+      display: inline-block;
+      margin: 10px;
+      padding: 12px 24px;
+      font-size: 16px;
       color: #fff;
-      padding: 1em 2em;
-      font-size: 1.2em;
+      background-color: #0088cc;
       border: none;
       border-radius: 8px;
-      cursor: pointer;
       text-decoration: none;
-      margin: 1em;
-    }
-    .btn:hover {
-      background-color: #005fa3;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>Добро пожаловать в</h1>
-  <h2>MLT Drinks</h2>
+  <h1>Добро пожаловать в <strong>MLT Drinks</strong>!</h1>
 
-  <button class="btn" onclick="goToCatalog()">Перейти к ассортименту</button>
-  <button class="btn" onclick="goToAdmin()">Админ-панель</button>
+  <div id="buttons">
+    <!-- Кнопки будут добавлены через JS -->
+  </div>
 
   <script>
-    function goToCatalog() {
-      window.location.href = 'https://vinncooper.github.io/MltDrinks/catalog.html';
-    }
-    function goToAdmin() {
-      window.location.href = 'https://vinncooper.github.io/MltDrinks/admin.html';
+    const tg = window.Telegram.WebApp;
+    const userId = tg.initDataUnsafe.user?.id;
+    const adminId = 2010575827; // твой Telegram ID
+
+    const buttonsDiv = document.getElementById('buttons');
+
+    if (userId === adminId) {
+      // Показать кнопку админ-панели
+      const adminBtn = document.createElement('a');
+      adminBtn.href = "admin.html";
+      adminBtn.className = "button";
+      adminBtn.textContent = "Админ-панель";
+      buttonsDiv.appendChild(adminBtn);
+    } else {
+      // Показать кнопку перейти к ассортименту
+      const catalogBtn = document.createElement('a');
+      catalogBtn.href = "catalog.html";
+      catalogBtn.className = "button";
+      catalogBtn.textContent = "Перейти к ассортименту";
+      buttonsDiv.appendChild(catalogBtn);
     }
   </script>
 </body>
