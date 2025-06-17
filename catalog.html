@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>MLT Drinks — Ассортимент</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f0f0f0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .category {
+      margin-bottom: 20px;
+    }
+    .product {
+      background: white;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>Категории</h1>
+  <div id="filters">
+    <select id="availabilityFilter">
+      <option value="all">Весь ассортимент</option>
+      <option value="available">В наличии</option>
+    </select>
+    <input type="text" id="searchInput" placeholder="Поиск товара...">
+  </div>
+
+  <div id="categories">
+    <!-- JS будет подставлять категории и товары сюда -->
+  </div>
+
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    // Здесь будет JS код для загрузки ассортимента из БД через Telegram WebApp (если подключено)
+    const categories = [
+      {
+        name: "Газировка",
+        products: [
+          { name: "Pepsi", available: true },
+          { name: "Fanta", available: false },
+        ]
+      },
+      {
+        name: "Натуральные",
+        products: [
+          { name: "Морс", available: true }
+        ]
+      }
+    ];
+
+    function renderCatalog() {
+      const filter = document.getElementById('availabilityFilter').value;
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const container = document.getElementById('categories');
+      container.innerHTML = '';
+
+      categories.forEach(category => {
+        const filtered = category.products.filter(p =>
+          (filter === 'all' || (filter === 'available' && p.available)) &&
+          p.name.toLowerCase().includes(search)
+        );
+
+        if (filtered.length > 0) {
+          const catDiv = document.createElement('div');
+          catDiv.classList.add('category');
+          catDiv.innerHTML = `<h2>${category.name}</h2>`;
+          filtered.forEach(product => {
+            catDiv.innerHTML += `<div class="product">${product.name} ${product.available ? '' : '(Нет в наличии)'}</div>`;
+          });
+          container.appendChild(catDiv);
+        }
+      });
+    }
+
+    document.getElementById('availabilityFilter').onchange = renderCatalog;
+    document.getElementById('searchInput').oninput = renderCatalog;
+    renderCatalog();
+  </script>
+</body>
+</html>
