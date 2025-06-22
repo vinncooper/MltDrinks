@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
-const app = express();
 const path = require('path');
+require('dotenv').config();
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const WEBAPP_URL = process.env.WEBAPP_URL;
@@ -15,16 +15,28 @@ bot.onText(/\/start/, (msg) => {
 
   const keyboard = {
     reply_markup: {
-      keyboard: [[
-        { text: isAdmin ? 'Админ-панель' : 'Перейти к ассортименту', web_app: { url: isAdmin ? `${WEBAPP_URL}/admin` : `${WEBAPP_URL}/catalog` } }
-      ]],
-      resize_keyboard: true,
-    },
+      keyboard: [
+        [
+          {
+            text: isAdmin ? 'Админ-панель' : 'Перейти к ассортименту',
+            web_app: {
+              url: isAdmin ? `${WEBAPP_URL}/admin` : `${WEBAPP_URL}/catalog`
+            }
+          }
+        ]
+      ],
+      resize_keyboard: true
+    }
   };
 
-  bot.sendMessage(chatId, 'Добро пожаловать!', keyboard);
+  bot.sendMessage(chatId, 'Добро пожаловать в Mlt Drinks!', keyboard);
 });
 
-// WebApp hosting (если нужно)
-app.use(express.static(path.join(__dirname, 'public'))); // если ты используешь index.html
-app.listen(3000, () => console.log('WebApp running on port 3000'));
+// WebApp Express-сервер
+const app = express();
+app.use(express.static(path.join(__dirname, 'public')));
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Сервер запущен на http://localhost:${PORT}`);
+});
