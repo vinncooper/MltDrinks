@@ -1,42 +1,37 @@
-require('dotenv').config();
-const TelegramBot = require('node-telegram-bot-api');
-const express = require('express');
-const path = require('path');
+import 'dotenv/config';
+import { Telegraf } from 'telegraf';
+import { message } from 'telegraf/filters';
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const WEBAPP_URL = process.env.WEBAPP_URL;
-const ADMIN_ID = process.env.ADMIN_ID;
+const bot = new Telegraf(process.env.BOT_TOKEN);
+const adminId = process.env.ADMIN_ID;
+const webAppUrl = process.env.WEBAPP_URL;
 
-const bot = new TelegramBot(BOT_TOKEN, { polling: true });
-
-bot.onText(/\/start/, (msg) => {
-  const chatId = msg.chat.id;
-  const isAdmin = String(chatId) === String(ADMIN_ID);
+bot.start(async (ctx) => {
+  const isAdmin = String(ctx.from.id) === String(adminId);
 
   const keyboard = {
-    reply_markup: {
-      keyboard: [
-        [
-          {
-            text: isAdmin ? 'Админ-панель' : 'Перейти к ассортименту',
-            web_app: {
-              url: isAdmin ? `${WEBAPP_URL}/admin` : `${WEBAPP_URL}/catalog`
-            }
-          }
-        ]
-      ],
-      resize_keyboard: true
-    }
+    inline_keyboard: [
+      [{ text: '🛒 Перейти к ассортименту', web_app: { url: webAppUrl } }],
+      ...(isAdmin
+        ? [[{ text: '🛠 Админ-панель', web_app: { url: `${webAppUrl}/admin` } }]]
+        : [])
+    ]
   };
 
-  bot.sendMessage(chatId, 'Добро пожаловать в Mlt Drinks!', keyboard);
+  await ctx.reply(
+    `Добро пожаловать в каталог Mlt Drinks, ${ctx.from.first_name}!`,
+    { reply_markup: keyboard }
+  );
 });
 
-// WebApp Express-сервер
-const app = express();
-app.use(express.static(path.join(__dirname, 'public')));
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Сервер запущен на http://localhost:${PORT}`);
+bot.on(message('web_app_data'), async (ctx) => {
+  const data = ctx.webAppData.data;
+  console.log('Получены данные из WebApp:', data);
+  await ctx.reply('Спасибо! Данные получены ✅');
 });
+
+bot.launch();
+console.log('🤖 Бот запущен');
+
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
