@@ -1,107 +1,68 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Mlt Drinks – Каталог</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mlt Drinks — Каталог</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 15px; background: #f9f9f9; }
-    h1 { margin-bottom: 10px; }
-    .top-block, .products { display: flex; flex-wrap: wrap; gap: 12px; }
-    .card {
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+    }
+    .section {
+      margin: 20px 0;
+    }
+    .button {
+      display: inline-block;
+      background: #007bff;
+      color: #fff;
+      padding: 12px 20px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    .product {
       background: #fff;
       border-radius: 10px;
       padding: 10px;
-      width: 170px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.1);
+      margin-bottom: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
-    .card img {
-      width: 100%; height: auto; border-radius: 8px;
+    .product .status {
+      font-weight: bold;
     }
-    .in-stock { color: green; font-weight: bold; }
-    .out-stock { color: red; font-weight: bold; }
-    .top-btns button {
-      background: #007bff; color: #fff; padding: 8px 12px;
-      border: none; border-radius: 20px; cursor: pointer;
-    }
-    .top-btns { margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 8px; }
-    a.contact { display: block; margin-top: 30px; font-size: 18px; text-align: center; }
+    .product .status.available { color: green; }
+    .product .status.unavailable { color: red; }
   </style>
 </head>
 <body>
-  <h1>Каталог Mlt Drinks</h1>
 
-  <div class="top-btns" id="categories"></div>
+  <h1>Добро пожаловать в Mlt Drinks</h1>
 
-  <h2>🔥 Хиты продаж</h2>
-  <div class="top-block" id="top-products"></div>
+  <div class="section">
+    <a class="button" href="tel:+79891791163">📞 Связаться с менеджером</a>
+  </div>
 
-  <h2>📦 Все товары</h2>
-  <div class="products" id="all-products">Загрузка...</div>
+  <div class="section">
+    <h2>Каталог</h2>
+    <div id="category-list">
+      <!-- Категории будут загружены здесь -->
+    </div>
+  </div>
 
-  <a href="#" class="contact" id="contact-btn">📞 Связаться с менеджером</a>
+  <div class="section">
+    <h2>🔥 Хиты продаж</h2>
+    <div id="bestsellers">
+      <!-- Хиты продаж будут загружены здесь -->
+    </div>
+  </div>
 
   <script>
-    let allProducts = [];
-
-    function renderCategories(products) {
-      const categories = [...new Set(products.map(p => p.category))];
-      const container = document.getElementById("categories");
-      container.innerHTML = '';
-      categories.forEach(cat => {
-        const btn = document.createElement("button");
-        btn.innerText = cat;
-        btn.onclick = () => renderAll(products.filter(p => p.category === cat));
-        container.appendChild(btn);
-      });
-    }
-
-    function renderAll(products) {
-      const container = document.getElementById("all-products");
-      container.innerHTML = '';
-      products.forEach(p => {
-        const el = document.createElement("div");
-        el.className = "card";
-        el.innerHTML = `
-          <img src="${p.image_url || 'https://via.placeholder.com/150'}" alt="${p.name}">
-          <div><b>${p.name}</b> (${p.volume})</div>
-          <div>${p.price}₽ — мин. ${p.min_order} шт.</div>
-          <div class="${p.in_stock ? 'in-stock' : 'out-stock'}">
-            ${p.in_stock ? 'В наличии' : 'Нет в наличии'}
-          </div>`;
-        container.appendChild(el);
-      });
-    }
-
-    function renderTop(products) {
-      const top = products.filter(p => p.is_top);
-      const container = document.getElementById("top-products");
-      container.innerHTML = '';
-      top.forEach(p => {
-        const el = document.createElement("div");
-        el.className = "card";
-        el.innerHTML = `
-          <img src="${p.image_url || 'https://via.placeholder.com/150'}" alt="${p.name}">
-          <div><b>${p.name}</b> (${p.volume})</div>
-          <div>${p.price}₽</div>`;
-        container.appendChild(el);
-      });
-    }
-
-    fetch("/products")
-      .then(res => res.json())
-      .then(data => {
-        allProducts = data;
-        renderAll(data);
-        renderTop(data);
-        renderCategories(data);
-      });
-
-    fetch("/manager-action")
-      .then(res => res.json())
-      .then(data => {
-        const link = document.getElementById("contact-btn");
-        link.href = data.action;
-      });
+    // JS будет загружать данные из базы
   </script>
 </body>
 </html>
