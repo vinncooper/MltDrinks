@@ -1,55 +1,26 @@
-const express = require("express");
-const path = require("path");
-const sqlite3 = require("sqlite3").verbose();
-const bodyParser = require("body-parser");
-const TelegramBot = require("node-telegram-bot-api");
-require("dotenv").config();
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { webhookCallback } from 'grammy';
+import { bot } from './bot.js'; // импортируем настроенного бота
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const bot = new TelegramBot(process.env.BOT_TOKEN);
-const ADMIN_ID = process.env.ADMIN_ID;
 
-const db = new sqlite3.Database("./db/mlt.db");
+// Определяем путь к директории public
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const publicPath = path.join(__dirname, 'public');
 
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public")));
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(publicPath)); // отдаём HTML/JS из public
 
-app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "public", "admin.html")));
-app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+// Telegram Webhook
+app.use(`/bot${process.env.BOT_TOKEN}`, webhookCallback(bot, 'express'));
 
-app.get("/products", (req, res) => {
-  db.all("SELECT * FROM products", (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
-});
-
-app.get("/manager-action", (req, res) => {
-  db.get("SELECT * FROM settings WHERE key = 'contact_action'", (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ action: row?.value || "tel:+79891791163" });
-  });
-});
-
-app.post("/manager-action", (req, res) => {
-  const { action } = req.body;
-  db.run("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", ['contact_action', action], (err) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
-  });
-});
-
-app.post("/add-product", (req, res) => {
-  const { name, image_url, category, price, volume, in_stock, min_order, is_top } = req.body;
-  db.run(`INSERT INTO products (name, image_url, category, price, volume, in_stock, min_order, is_top)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [name, image_url, category, price, volume, in_stock, min_order, is_top], (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true });
-    });
-});
-
+// Старт сервера
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
