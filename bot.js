@@ -1,37 +1,52 @@
-import 'dotenv/config';
+import express from 'express';
 import { Telegraf } from 'telegraf';
-import { message } from 'telegraf/filters';
+import dotenv from 'dotenv';
 
+dotenv.config();
+
+const app = express();
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const adminId = process.env.ADMIN_ID;
-const webAppUrl = process.env.WEBAPP_URL;
 
-bot.start(async (ctx) => {
-  const isAdmin = String(ctx.from.id) === String(adminId);
+const ADMIN_ID = process.env.ADMIN_ID;
+const WEBAPP_URL = process.env.WEBAPP_URL;
+
+app.use(express.json());
+
+// Команда /start
+bot.start((ctx) => {
+  const isAdmin = ctx.from.id.toString() === ADMIN_ID;
 
   const keyboard = {
     inline_keyboard: [
-      [{ text: '🛒 Перейти к ассортименту', web_app: { url: webAppUrl } }],
+      [{ text: '🛒 Перейти к ассортименту', web_app: { url: WEBAPP_URL } }],
       ...(isAdmin
-        ? [[{ text: '🛠 Админ-панель', web_app: { url: `${webAppUrl}/admin` } }]]
+        ? [[{ text: '🛠 Админ-панель', web_app: { url: `${WEBAPP_URL}/admin` } }]]
         : [])
     ]
   };
 
-  await ctx.reply(
-    `Добро пожаловать в каталог Mlt Drinks, ${ctx.from.first_name}!`,
+  ctx.reply(
+    `Добро пожаловать, ${ctx.from.first_name}!`,
     { reply_markup: keyboard }
   );
 });
 
-bot.on(message('web_app_data'), async (ctx) => {
-  const data = ctx.webAppData.data;
-  console.log('Получены данные из WebApp:', data);
-  await ctx.reply('Спасибо! Данные получены ✅');
+// Обработка данных из WebApp
+bot.on('message', async (ctx) => {
+  if (ctx.webAppData) {
+    console.log('Получены данные из WebApp:', ctx.webAppData.data);
+    await ctx.reply('✅ Данные получены!');
+  }
 });
 
-bot.launch();
-console.log('🤖 Бот запущен');
+// Устанавливаем Webhook
+const PORT = process.env.PORT || 3000;
+const path = `/bot${process.env.BOT_TOKEN}`;
+app.use(bot.webhookCallback(path));
 
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+// Запуск express-сервера
+app.listen(PORT, async () => {
+  const webhookUrl = `${WEBAPP_URL}${path}`;
+  await bot.telegram.setWebhook(webhookUrl);
+  console.log(`🚀 Webhook установлен: ${webhookUrl}`);
+});
