@@ -1,31 +1,30 @@
-import { Telegraf } from 'telegraf';
-import { message } from 'telegraf/filters';
-import 'dotenv/config';
+import { Telegraf, Markup } from 'telegraf'
+import dotenv from 'dotenv'
+dotenv.config()
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
-
-const isAdmin = (ctx) => ctx.from.id === 2010575827;
+const bot = new Telegraf(process.env.BOT_TOKEN)
+const adminId = Number(process.env.ADMIN_ID)
 
 bot.start((ctx) => {
-  const buttons = [];
+  const isAdmin = ctx.from.id === adminId
+  const keyboard = []
 
-  if (isAdmin(ctx)) {
-    buttons.push([{ text: '🛠 Админ-панель', web_app: { url: 'https://mltdrinks.onrender.com/admin.html' } }]);
+  if (isAdmin) {
+    keyboard.push(
+      [Markup.button.webApp('Админ-панель', `${process.env.WEBAPP_URL}/admin.html`)],
+      [Markup.button.webApp('Каталог', `${process.env.WEBAPP_URL}/index.html`)]
+    )
+  } else {
+    keyboard.push([
+      Markup.button.webApp('Перейти к ассортименту', `${process.env.WEBAPP_URL}/index.html`)
+    ])
   }
 
-  buttons.push([{ text: '🛒 Перейти к ассортименту', web_app: { url: 'https://mltdrinks.onrender.com' } }]);
+  ctx.reply('Выберите действие:', Markup.keyboard(keyboard).resize())
+})
 
-  ctx.reply('Добро пожаловать в Mlt Drinks!', {
-    reply_markup: {
-      keyboard: buttons,
-      resize_keyboard: true,
-    },
-  });
-});
+bot.launch()
+console.log('🤖 Бот запущен')
 
-bot.on(message('web_app_data'), async (ctx) => {
-  const data = ctx.message.web_app_data.data;
-  console.log('📦 Данные из WebApp:', data);
-});
-
-export { bot };
+process.once('SIGINT', () => bot.stop('SIGINT'))
+process.once('SIGTERM', () => bot.stop('SIGTERM'))
