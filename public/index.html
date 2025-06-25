@@ -2,67 +2,23 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mlt Drinks — Каталог</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      background: #f4f4f4;
-    }
-    h1 {
-      text-align: center;
-    }
-    .section {
-      margin: 20px 0;
-    }
-    .button {
-      display: inline-block;
-      background: #007bff;
-      color: #fff;
-      padding: 12px 20px;
-      text-decoration: none;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-    .product {
-      background: #fff;
-      border-radius: 10px;
-      padding: 10px;
-      margin-bottom: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-    .product .status {
-      font-weight: bold;
-    }
-    .product .status.available { color: green; }
-    .product .status.unavailable { color: red; }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="container">
+    <h1>Каталог</h1>
 
-  <h1>Добро пожаловать в Mlt Drinks</h1>
+    <a href="tel:+79891791163" class="manager-link">📞 Связаться с менеджером</a>
 
-  <div class="section">
-    <a class="button" href="tel:+79891791163">📞 Связаться с менеджером</a>
+    <h2>Хиты продаж</h2>
+    <div id="hits"></div>
+
+    <h2>Все товары</h2>
+    <div id="all"></div>
   </div>
 
-  <div class="section">
-    <h2>Каталог</h2>
-    <div id="category-list">
-      <!-- Категории будут загружены здесь -->
-    </div>
-  </div>
-
-  <div class="section">
-    <h2>🔥 Хиты продаж</h2>
-    <div id="bestsellers">
-      <!-- Хиты продаж будут загружены здесь -->
-    </div>
-  </div>
-
-  <script>
-    // JS будет загружать данные из базы
-  </script>
+  <script src="main.js"></script>
 </body>
 </html>

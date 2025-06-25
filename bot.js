@@ -1,30 +1,39 @@
-import { Telegraf, Markup } from 'telegraf'
-import dotenv from 'dotenv'
-dotenv.config()
+import { Bot, InlineKeyboard } from 'grammy';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const bot = new Telegraf(process.env.BOT_TOKEN)
-const adminId = Number(process.env.ADMIN_ID)
+const bot = new Bot(process.env.BOT_TOKEN);
+const ADMIN_ID = 2010575827;
 
-bot.start((ctx) => {
-  const isAdmin = ctx.from.id === adminId
-  const keyboard = []
-
-  if (isAdmin) {
-    keyboard.push(
-      [Markup.button.webApp('Админ-панель', `${process.env.WEBAPP_URL}/admin.html`)],
-      [Markup.button.webApp('Каталог', `${process.env.WEBAPP_URL}/index.html`)]
-    )
+bot.command('start', async (ctx) => {
+  const keyboard = new InlineKeyboard();
+  if (ctx.from.id === ADMIN_ID) {
+    keyboard.text('Админ-панель', 'admin');
+    keyboard.text('Каталог', 'catalog');
   } else {
-    keyboard.push([
-      Markup.button.webApp('Перейти к ассортименту', `${process.env.WEBAPP_URL}/index.html`)
-    ])
+    keyboard.text('Каталог', 'catalog');
   }
+  await ctx.reply('Выберите действие:', {
+    reply_markup: keyboard
+  });
+});
 
-  ctx.reply('Выберите действие:', Markup.keyboard(keyboard).resize())
-})
+bot.callbackQuery('catalog', async (ctx) => {
+  await ctx.answerCallbackQuery();
+  await ctx.reply('Открыть каталог:', {
+    reply_markup: {
+      inline_keyboard: [[{ text: 'Перейти', web_app: { url: 'https://mltdrinks.onrender.com/index.html' } }]]
+    }
+  });
+});
 
-bot.launch()
-console.log('🤖 Бот запущен')
+bot.callbackQuery('admin', async (ctx) => {
+  await ctx.answerCallbackQuery();
+  await ctx.reply('Открыть админ-панель:', {
+    reply_markup: {
+      inline_keyboard: [[{ text: 'Перейти', web_app: { url: 'https://mltdrinks.onrender.com/admin.html' } }]]
+    }
+  });
+});
 
-process.once('SIGINT', () => bot.stop('SIGINT'))
-process.once('SIGTERM', () => bot.stop('SIGTERM'))
+export default bot;
