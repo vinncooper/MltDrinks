@@ -1,6 +1,6 @@
 import express from "express";
 import sqlite3 from "sqlite3";
-import { open } from "sqlite";
+import { open } from "sqlite3";
 import path from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
