@@ -1,23 +1,35 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Mlt Drinks — Каталог</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Каталог</h1>
+  <!-- Приветственная страница -->
+  <section id="welcome" class="centered">
+    <h1>Добро пожаловать в <br><span class="logo">Mlt Drinks</span></h1>
+    <button id="goToCatalog" class="main-btn">Перейти к ассортименту</button>
+  </section>
 
-    <a href="tel:+79891791163" class="manager-link">📞 Связаться с менеджером</a>
-
-    <h2>Хиты продаж</h2>
-    <div id="hits"></div>
-
-    <h2>Все товары</h2>
-    <div id="all"></div>
-  </div>
+  <!-- Каталог -->
+  <section id="catalog" class="hidden">
+    <header>
+      <h1>Каталог</h1>
+      <a href="tel:+79999999999" class="call-link">📞 Связаться с менеджером</a>
+    </header>
+    <!-- Поиск -->
+    <input type="text" id="searchInput" placeholder="Поиск..." class="search">
+    <!-- Категории -->
+    <div id="categories" class="categories"></div>
+    <!-- Хиты продаж -->
+    <h2>🔥 Хиты продаж</h2>
+    <div id="bestsellers" class="product-grid"></div>
+    <!-- Все товары -->
+    <h2>📦 Все товары</h2>
+    <div id="products" class="product-grid"></div>
+  </section>
 
   <script src="main.js"></script>
 </body>
