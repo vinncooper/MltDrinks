@@ -1,36 +1,36 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Mlt Drinks — Каталог</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Mlt Drinks</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Приветственная страница -->
-  <section id="welcome" class="centered">
-    <h1>Добро пожаловать в <br><span class="logo">Mlt Drinks</span></h1>
-    <button id="goToCatalog" class="main-btn">Перейти к ассортименту</button>
-  </section>
+<div id="welcome" class="welcome-container">
+    <h1>
+        Добро пожаловать в <span class="blue">Mlt Drinks</span>
+    </h1>
+    <button id="goto-catalog">Перейти к ассортименту</button>
+</div>
 
-  <!-- Каталог -->
-  <section id="catalog" class="hidden">
-    <header>
-      <h1>Каталог</h1>
-      <a href="tel:+79999999999" class="call-link">📞 Связаться с менеджером</a>
-    </header>
-    <!-- Поиск -->
-    <input type="text" id="searchInput" placeholder="Поиск..." class="search">
-    <!-- Категории -->
-    <div id="categories" class="categories"></div>
-    <!-- Хиты продаж -->
+<div id="catalog" style="display:none;">
+    <div class="catalog-header">
+        <h1>Каталог</h1>
+        <a href="tel:+79999999999" class="manager-link">📞 Связаться с менеджером</a>
+    </div>
+    <input type="text" id="search" placeholder="Поиск...">
+
+    <div id="categories-list" class="categories-list"></div>
+
     <h2>🔥 Хиты продаж</h2>
-    <div id="bestsellers" class="product-grid"></div>
-    <!-- Все товары -->
-    <h2>📦 Все товары</h2>
-    <div id="products" class="product-grid"></div>
-  </section>
+    <div id="hits-list" class="products-grid"></div>
 
-  <script src="main.js"></script>
+    <h2>Категории</h2>
+    <div id="category-buttons"></div>
+
+    <div id="products-list" class="products-grid"></div>
+</div>
+
+<script src="main.js"></script>
 </body>
 </html>

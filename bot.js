@@ -1,39 +1,57 @@
-import { Bot, InlineKeyboard } from 'grammy';
-import dotenv from 'dotenv';
+import { Bot, InlineKeyboard, webhookCallback } from "grammy";
+import express from "express";
+import dotenv from "dotenv";
 dotenv.config();
 
-const bot = new Bot(process.env.BOT_TOKEN);
-const ADMIN_ID = 2010575827;
+const botToken = process.env.BOT_TOKEN || "7698057378:AAGYeWYqwO2Zys__wajlTFZ8rB33DR7Cl3U"; // твой токен
+const adminId = 2010575827; // твой Telegram ID (замени если нужно)
+const webAppUrl = "https://mltdrinks.onrender.com/index.html"; // твой WebApp
+const adminWebAppUrl = "https://mltdrinks.onrender.com/admin.html"; // админ-панель
 
-bot.command('start', async (ctx) => {
-  const keyboard = new InlineKeyboard();
-  if (ctx.from.id === ADMIN_ID) {
-    keyboard.text('Админ-панель', 'admin');
-    keyboard.text('Каталог', 'catalog');
-  } else {
-    keyboard.text('Каталог', 'catalog');
-  }
-  await ctx.reply('Выберите действие:', {
-    reply_markup: keyboard
-  });
-});
+const bot = new Bot(botToken);
 
-bot.callbackQuery('catalog', async (ctx) => {
-  await ctx.answerCallbackQuery();
-  await ctx.reply('Открыть каталог:', {
-    reply_markup: {
-      inline_keyboard: [[{ text: 'Перейти', web_app: { url: 'https://mltdrinks.onrender.com/index.html' } }]]
+// Главное меню для покупателя
+function getBuyerKeyboard() {
+  return new InlineKeyboard().webApp("Каталог", webAppUrl);
+}
+
+// Главное меню для админа
+function getAdminKeyboard() {
+  return new InlineKeyboard()
+    .webApp("Каталог", webAppUrl)
+    .row()
+    .webApp("Админ-панель", adminWebAppUrl);
+}
+
+// Приветствие при /start
+bot.command("start", async (ctx) => {
+  const isAdmin = ctx.from.id === adminId;
+  await ctx.reply(
+    "Добро пожаловать в Mlt Drinks!\nВыберите раздел:",
+    {
+      reply_markup: isAdmin ? getAdminKeyboard() : getBuyerKeyboard(),
     }
-  });
+  );
 });
 
-bot.callbackQuery('admin', async (ctx) => {
-  await ctx.answerCallbackQuery();
-  await ctx.reply('Открыть админ-панель:', {
-    reply_markup: {
-      inline_keyboard: [[{ text: 'Перейти', web_app: { url: 'https://mltdrinks.onrender.com/admin.html' } }]]
-    }
-  });
+// --- Обработка web_app данных (например, если что-то отправляется из WebApp) ---
+bot.on("message:web_app_data", async (ctx) => {
+  // ctx.message.web_app_data.data — данные из WebApp (JSON-строка)
+  await ctx.reply(`Данные приняты: ${ctx.message.web_app_data.data}`);
 });
 
-export default bot;
+// --- Запуск через webhook + Express (современно и удобно для Render) ---
+const app = express();
+app.use(express.json());
+
+// Устанавливаем webhook для граммотной работы на Render/Heroku
+app.use(`/bot${botToken}`, webhookCallback(bot, "express"));
+
+// (по желанию, простой тестовый роут)
+app.get("/", (req, res) => res.send("Mlt Drinks Bot работает!"));
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🤖 Бот запущен на порту ${PORT}`);
+  // Webhook устанавливать вручную не надо, если запускаешь на Render c публичным URL!
+});

@@ -1,35 +1,39 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mlt Drinks — Админ-панель</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <title>Админ-панель — Mlt Drinks</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Админ-панель</h1>
+    <div class="admin-container">
+        <h1>Админ-панель</h1>
 
-    <form id="product-form">
-      <input type="text" id="name" placeholder="Название" required />
-      <input type="text" id="photo" placeholder="Ссылка на фото" required />
-      <input type="number" id="price" placeholder="Цена" required />
-      <select id="status">
-        <option value="в наличии">В наличии</option>
-        <option value="нет в наличии">Нет в наличии</option>
-      </select>
-      <label>
-        <input type="checkbox" id="isHit" /> Хит продаж
-      </label>
-      <button type="submit">Добавить товар</button>
-    </form>
+        <form id="category-form" class="admin-form">
+            <h3>Добавить категорию</h3>
+            <input type="text" id="category-name" placeholder="Название категории" required>
+            <button type="submit">Добавить категорию</button>
+        </form>
 
-    <a href="index.html" class="button">Перейти в каталог</a>
+        <form id="product-form" class="admin-form">
+            <h3>Добавить товар</h3>
+            <input type="text" id="product-name" placeholder="Название" required>
+            <input type="text" id="product-volume" placeholder="Литраж (например 0.5 л)" required>
+            <input type="number" step="0.01" id="product-price" placeholder="Цена" required>
+            <input type="number" id="product-minorder" placeholder="Мин. заказ" required>
+            <input type="text" id="product-image" placeholder="Ссылка на фото">
+            <select id="product-category" required></select>
+            <label><input type="checkbox" id="product-instock" checked> В наличии</label>
+            <label><input type="checkbox" id="product-istop"> Хит продаж</label>
+            <button type="submit">Добавить товар</button>
+        </form>
 
-    <h2>Все товары:</h2>
-    <div id="all"></div>
-  </div>
+        <h2>Все категории:</h2>
+        <ul id="categories-admin"></ul>
 
-  <script src="main.js"></script>
+        <h2>Все товары:</h2>
+        <ul id="products-admin"></ul>
+    </div>
+    <script src="main.js"></script>
 </body>
 </html>
