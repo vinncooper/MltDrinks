@@ -1,39 +1,113 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Админ-панель — Mlt Drinks</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Mlt Drinks – Админ-панель</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .admin-section { margin-bottom: 36px; }
+    .table { width:100%; border-collapse:collapse; margin:12px 0; }
+    .table th, .table td { border:1px solid #dde; padding:8px 4px; text-align:center; }
+    .table th { background: #f0f0ff; }
+    .form-row { display:flex; gap:10px; margin-bottom:7px;}
+    .form-row input, .form-row select { flex:1; padding:5px; border-radius:7px; border:1px solid #ccd; }
+    .small-btn { padding:3px 7px; border-radius:7px; border:none; cursor:pointer; font-size:0.97em; margin-left:3px; }
+    .small-btn.edit { background:#daffe1;}
+    .small-btn.delete { background:#ffd4d4;}
+    .admin-header { margin-bottom:20px;}
+  </style>
 </head>
 <body>
-    <div class="admin-container">
-        <h1>Админ-панель</h1>
-
-        <form id="category-form" class="admin-form">
-            <h3>Добавить категорию</h3>
-            <input type="text" id="category-name" placeholder="Название категории" required>
-            <button type="submit">Добавить категорию</button>
-        </form>
-
-        <form id="product-form" class="admin-form">
-            <h3>Добавить товар</h3>
-            <input type="text" id="product-name" placeholder="Название" required>
-            <input type="text" id="product-volume" placeholder="Литраж (например 0.5 л)" required>
-            <input type="number" step="0.01" id="product-price" placeholder="Цена" required>
-            <input type="number" id="product-minorder" placeholder="Мин. заказ" required>
-            <input type="text" id="product-image" placeholder="Ссылка на фото">
-            <select id="product-category" required></select>
-            <label><input type="checkbox" id="product-instock" checked> В наличии</label>
-            <label><input type="checkbox" id="product-istop"> Хит продаж</label>
-            <button type="submit">Добавить товар</button>
-        </form>
-
-        <h2>Все категории:</h2>
-        <ul id="categories-admin"></ul>
-
-        <h2>Все товары:</h2>
-        <ul id="products-admin"></ul>
+  <div class="admin-header">
+    <h1>Админ-панель Mlt Drinks</h1>
+    <div>Управление ассортиментом, категориями, менеджерами</div>
+  </div>
+  <div class="container" id="adminApp">
+    <!-- Меню -->
+    <div style="display:flex;gap:12px;margin-bottom:20px;">
+      <button onclick="switchTab('products')">Товары</button>
+      <button onclick="switchTab('categories')">Категории</button>
+      <button onclick="switchTab('managers')">Менеджеры</button>
     </div>
-    <script src="main.js"></script>
+
+    <!-- Категории -->
+    <div class="admin-section" id="categoriesTab" style="display:none">
+      <h2>Категории</h2>
+      <form onsubmit="return addCategory()">
+        <div class="form-row">
+          <input type="text" id="newCategoryName" placeholder="Новая категория" required>
+          <button type="submit">Добавить</button>
+        </div>
+      </form>
+      <table class="table" id="categoryTable">
+        <tr>
+          <th>Категория</th>
+          <th>Действия</th>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Товары -->
+    <div class="admin-section" id="productsTab">
+      <h2>Товары</h2>
+      <form onsubmit="return addProduct()">
+        <div class="form-row">
+          <input type="text" id="prodName" placeholder="Название" required>
+          <input type="number" id="prodPrice" placeholder="Цена" required min="0">
+          <input type="number" id="prodQty" placeholder="Остаток" min="0" required>
+          <select id="prodStock">
+            <option value="1">В наличии</option>
+            <option value="0">Нет в наличии</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <select id="prodCat"></select>
+          <input type="text" id="prodImg" placeholder="URL изображения">
+          <label><input type="checkbox" id="prodHot"> Хит</label>
+          <label><input type="checkbox" id="prodSale"> Акция</label>
+          <label><input type="checkbox" id="prodPack"> Упаковка</label>
+        </div>
+        <button type="submit" style="width:100%;margin-top:8px;">Добавить товар</button>
+      </form>
+      <table class="table" id="productsTable">
+        <tr>
+          <th>Название</th>
+          <th>Категория</th>
+          <th>Цена</th>
+          <th>Остаток</th>
+          <th>В наличии</th>
+          <th>Хит</th>
+          <th>Акция</th>
+          <th>Уп.</th>
+          <th>Изображение</th>
+          <th>Действия</th>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Менеджеры -->
+    <div class="admin-section" id="managersTab" style="display:none">
+      <h2>Менеджеры</h2>
+      <form onsubmit="return addManager()">
+        <div class="form-row">
+          <input type="text" id="managerName" placeholder="Имя" required>
+          <input type="text" id="managerPhone" placeholder="Телефон">
+          <input type="text" id="managerTG" placeholder="Telegram (@ник)">
+          <input type="text" id="managerWA" placeholder="WhatsApp">
+          <button type="submit">Добавить</button>
+        </div>
+      </form>
+      <table class="table" id="managersTable">
+        <tr>
+          <th>Имя</th>
+          <th>Телефон</th>
+          <th>Telegram</th>
+          <th>WhatsApp</th>
+          <th>Действия</th>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <script src="admin.js"></script>
 </body>
 </html>

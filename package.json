@@ -1,19 +1,19 @@
 {
-  "name": "mlt-drinks-bot",
+  "name": "mlt-drinks",
   "version": "1.0.0",
   "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node bot.js",
-    "build": "npm rebuild sqlite3 && echo Build complete"
+    "build": "echo Build complete"
   },
   "dependencies": {
-    "body-parser": "^2.2.0",
+    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.6.0",
+    "dotenv": "^16.6.1",
     "express": "^4.21.2",
-    "grammy": "^1.36.3",
-    "sqlite3": "^5.1.7"
+    "node-telegram-bot-api": "^0.61.0",
+    "sqlite3": "^5.1.7",
+    "telegraf": "^4.16.3"
   }
 }

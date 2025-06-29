@@ -1,36 +1,50 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Mlt Drinks</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Mlt Drinks – Каталог</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<div id="welcome" class="welcome-container">
-    <h1>
-        Добро пожаловать в <span class="blue">Mlt Drinks</span>
-    </h1>
-    <button id="goto-catalog">Перейти к ассортименту</button>
-</div>
-
-<div id="catalog" style="display:none;">
-    <div class="catalog-header">
-        <h1>Каталог</h1>
-        <a href="tel:+79999999999" class="manager-link">📞 Связаться с менеджером</a>
+  <div class="header">
+    <h1>Mlt Drinks</h1>
+    <div style="font-size:1.15em">Онлайн-каталог напитков</div>
+  </div>
+  <div class="container" id="main">
+    <div id="welcome">
+      <h2>Добро пожаловать!</h2>
+      <p>Ознакомьтесь с ассортиментом и акциями.<br> Быстрые кнопки для выбора отдела:</p>
+      <div class="fast-links" id="fastLinks"></div>
+      <button class="manager-btn" id="managerBtn">Связаться с менеджером</button>
+      <br>
+      <button class="category-btn" id="catalogBtn">Перейти к категориям</button>
+      <div style="margin-top:18px;">
+        <b>Хит продаж:</b>
+        <div id="hotProducts" class="product-list"></div>
+      </div>
+      <div style="margin-top:18px;">
+        <b>Акции:</b>
+        <div id="saleProducts" class="product-list"></div>
+      </div>
     </div>
-    <input type="text" id="search" placeholder="Поиск...">
-
-    <div id="categories-list" class="categories-list"></div>
-
-    <h2>🔥 Хиты продаж</h2>
-    <div id="hits-list" class="products-grid"></div>
-
-    <h2>Категории</h2>
-    <div id="category-buttons"></div>
-
-    <div id="products-list" class="products-grid"></div>
-</div>
-
-<script src="main.js"></script>
+    <div id="categoryPage" style="display:none;">
+      <button class="back-btn" onclick="showWelcome()">← Назад</button>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Поиск товара...">
+        <select id="filterStock">
+          <option value="">Все</option>
+          <option value="1">В наличии</option>
+          <option value="0">Нет в наличии</option>
+        </select>
+      </div>
+      <div class="category-list" id="categoryList"></div>
+    </div>
+    <div id="productPage" style="display:none;">
+      <button class="back-btn" onclick="showCategories()">← Назад</button>
+      <h2 id="catName"></h2>
+      <div class="product-list" id="productsInCategory"></div>
+    </div>
+  </div>
+  <script src="app.js"></script>
 </body>
 </html>

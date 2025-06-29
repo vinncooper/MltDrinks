@@ -1,0 +1,30 @@
+CREATE TABLE IF NOT EXISTS categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    is_main INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS products (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    category_id INTEGER,
+    price REAL NOT NULL,
+    in_stock INTEGER DEFAULT 1,
+    stock_qty INTEGER DEFAULT 0,
+    in_pack INTEGER DEFAULT 1,
+    img TEXT,
+    is_hot INTEGER DEFAULT 0,
+    is_promo INTEGER DEFAULT 0,
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+
+CREATE TABLE IF NOT EXISTS admins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tg_id TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS managers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    phone TEXT
+);

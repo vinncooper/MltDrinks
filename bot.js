@@ -1,57 +1,117 @@
-import { Bot, InlineKeyboard, webhookCallback } from "grammy";
-import express from "express";
-import dotenv from "dotenv";
+import dotenv from 'dotenv';
 dotenv.config();
 
-const botToken = process.env.BOT_TOKEN || "7698057378:AAGYeWYqwO2Zys__wajlTFZ8rB33DR7Cl3U"; // твой токен
-const adminId = 2010575827; // твой Telegram ID (замени если нужно)
-const webAppUrl = "https://mltdrinks.onrender.com/index.html"; // твой WebApp
-const adminWebAppUrl = "https://mltdrinks.onrender.com/admin.html"; // админ-панель
+import { Telegraf, Markup } from 'telegraf';
+import sqlite3 from 'sqlite3';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const bot = new Bot(botToken);
+// Для __dirname в ES-модулях
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Главное меню для покупателя
-function getBuyerKeyboard() {
-  return new InlineKeyboard().webApp("Каталог", webAppUrl);
-}
+// Получаем переменные из .env
+const TG_TOKEN = process.env.TG_TOKEN;
+const TG_ADMIN_ID = process.env.TG_ADMIN_ID;
 
-// Главное меню для админа
-function getAdminKeyboard() {
-  return new InlineKeyboard()
-    .webApp("Каталог", webAppUrl)
-    .row()
-    .webApp("Админ-панель", adminWebAppUrl);
-}
+// Инициализация базы данных
+const db = new sqlite3.Database(path.join(__dirname, 'database', 'mlt.db'));
 
-// Приветствие при /start
-bot.command("start", async (ctx) => {
-  const isAdmin = ctx.from.id === adminId;
-  await ctx.reply(
-    "Добро пожаловать в Mlt Drinks!\nВыберите раздел:",
-    {
-      reply_markup: isAdmin ? getAdminKeyboard() : getBuyerKeyboard(),
+// Инициализация бота
+const bot = new Telegraf(TG_TOKEN);
+
+// Приветствие новым пользователям
+bot.start(async ctx => {
+  try {
+    // Сохраняем пользователя
+    db.run('INSERT OR IGNORE INTO users (id, username, first_name) VALUES (?, ?, ?)', [
+      ctx.from.id, ctx.from.username || '', ctx.from.first_name || ''
+    ]);
+    // Приветствие + ходовой товар (из "is_hot" или "is_sale")
+    db.all('SELECT * FROM products WHERE is_hot=1 OR is_sale=1 ORDER BY is_hot DESC, is_sale DESC, id DESC LIMIT 3', [], (err, rows) => {
+      let msg = `👋 Добро пожаловать в *Mlt Drinks*!\n\nВот наши популярные товары:\n`;
+      rows.forEach(p => msg += `\n*${p.name}* — ${p.price}₽ (${p.in_stock ? 'В наличии' : 'Нет в наличии'})`);
+      msg += `\n\nНажмите /catalog для просмотра всего ассортимента.`;
+      ctx.replyWithMarkdown(msg, Markup.keyboard([['Каталог', 'Связаться с менеджером']]).resize());
+    });
+  } catch(e) { ctx.reply('Ошибка приветствия'); }
+});
+
+// Быстрые кнопки + каталог
+bot.hears(['Каталог', '/catalog'], async ctx => {
+  db.all('SELECT * FROM categories', [], (err, cats) => {
+    const kb = cats.map(c=>[c.name]);
+    ctx.reply('Выберите категорию:', Markup.keyboard([...kb, ['Хиты продаж', 'Акции', 'Назад']]).resize());
+  });
+});
+
+// Показываем товары по категории
+bot.hears(/.+/, async ctx => {
+  let name = ctx.message.text;
+  // Проверяем, категория или спецраздел
+  db.get('SELECT * FROM categories WHERE name=?', [name], (err, cat) => {
+    if (cat) {
+      db.all('SELECT * FROM products WHERE category_id=? ORDER BY is_hot DESC, is_sale DESC, name', [cat.id], (err, prods) => {
+        if (!prods.length) return ctx.reply('В этой категории пока нет товаров.');
+        prods.forEach(p => {
+          ctx.replyWithPhoto(p.img, {
+            caption: `*${p.name}*\n${p.price}₽\nОстаток: ${p.stock_qty} ${p.in_pack?'уп.':'шт.'}\n${p.in_stock?'🟢 В наличии':'🔴 Нет в наличии'}\n`,
+            parse_mode: 'Markdown'
+          });
+        });
+      });
+    } else if (name === 'Хиты продаж') {
+      db.all('SELECT * FROM products WHERE is_hot=1 ORDER BY id DESC', [], (err, prods) => {
+        if (!prods.length) return ctx.reply('Хитов продаж пока нет.');
+        prods.forEach(p => ctx.replyWithPhoto(p.img, {caption:`*${p.name}*\n${p.price}₽\nОстаток: ${p.stock_qty} ${p.in_pack?'уп.':'шт.'}\n${p.in_stock?'🟢 В наличии':'🔴 Нет в наличии'}`,parse_mode:'Markdown'}));
+      });
+    } else if (name === 'Акции') {
+      db.all('SELECT * FROM products WHERE is_sale=1 ORDER BY id DESC', [], (err, prods) => {
+        if (!prods.length) return ctx.reply('Акций пока нет.');
+        prods.forEach(p => ctx.replyWithPhoto(p.img, {caption:`*${p.name}*\n${p.price}₽\nОстаток: ${p.stock_qty} ${p.in_pack?'уп.':'шт.'}\n${p.in_stock?'🟢 В наличии':'🔴 Нет в наличии'}`,parse_mode:'Markdown'}));
+      });
+    } else if (name === 'Связаться с менеджером') {
+      db.all('SELECT * FROM managers', [], (err, mans) => {
+        let txt = 'Наши менеджеры:\n';
+        mans.forEach(m=>{
+          txt += `\n${m.name} `;
+          if (m.phone) txt += `📱: ${m.phone} `;
+          if (m.telegram) txt += `TG: @${m.telegram.replace('@','')} `;
+          if (m.whatsapp) txt += `WA: ${m.whatsapp}`;
+        });
+        ctx.reply(txt);
+      });
+    } else if (name === 'Назад') {
+      ctx.reply('Главное меню', Markup.keyboard([['Каталог', 'Связаться с менеджером']]).resize());
     }
-  );
+  });
 });
 
-// --- Обработка web_app данных (например, если что-то отправляется из WebApp) ---
-bot.on("message:web_app_data", async (ctx) => {
-  // ctx.message.web_app_data.data — данные из WebApp (JSON-строка)
-  await ctx.reply(`Данные приняты: ${ctx.message.web_app_data.data}`);
+// Админ: уведомления о низком остатке (например, по кнопке или по расписанию)
+const notifyAdminLowStock = () => {
+  db.all('SELECT * FROM products WHERE stock_qty<=5 AND in_stock=1', [], (err, prods) => {
+    if (prods.length) {
+      let msg = '⚠️ Осталось мало товара:\n';
+      prods.forEach(p=>msg+=`\n${p.name}: ${p.stock_qty} шт`);
+      bot.telegram.sendMessage(TG_ADMIN_ID, msg);
+    }
+  });
+};
+
+// Команда для ручной проверки остатков
+bot.command('lowstock', ctx => {
+  if (ctx.from.id == TG_ADMIN_ID) {
+    db.all('SELECT * FROM products WHERE stock_qty<=5 AND in_stock=1', [], (err, prods) => {
+      if (!prods.length) return ctx.reply('Все товары в норме');
+      let msg = '⚠️ Осталось мало товара:\n';
+      prods.forEach(p=>msg+=`\n${p.name}: ${p.stock_qty} шт`);
+      ctx.reply(msg);
+    });
+  }
 });
 
-// --- Запуск через webhook + Express (современно и удобно для Render) ---
-const app = express();
-app.use(express.json());
+// (Можно добавить cron и автоматизацию, если потребуется)
 
-// Устанавливаем webhook для граммотной работы на Render/Heroku
-app.use(`/bot${botToken}`, webhookCallback(bot, "express"));
-
-// (по желанию, простой тестовый роут)
-app.get("/", (req, res) => res.send("Mlt Drinks Bot работает!"));
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🤖 Бот запущен на порту ${PORT}`);
-  // Webhook устанавливать вручную не надо, если запускаешь на Render c публичным URL!
-});
+// Запуск
+bot.launch();
+console.log('TG Bot запущен');
